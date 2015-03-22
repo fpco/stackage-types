@@ -1,5 +1,7 @@
 ## stackage-types
 
+[![Build Status](https://travis-ci.org/fpco/stackage-types.svg?branch=master)](https://travis-ci.org/fpco/stackage-types)
+
 This is a repository for sharing data types across multiple packages in the
 [Stackage project](https://www.stackage.org). In particular, it started as a
 means of sharing code between
