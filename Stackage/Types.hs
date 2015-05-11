@@ -48,6 +48,7 @@ import qualified Data.Set                        as Set
 import           Data.String                     (IsString, fromString)
 import           Data.Text                       (Text, pack, unpack)
 import qualified Data.Text                       as T
+import           Data.Time                       (Day)
 import qualified Data.Traversable                as T
 import           Data.Typeable                   (TypeRep, Typeable, typeOf)
 import           Data.Vector                     (Vector)
@@ -59,12 +60,17 @@ import           Distribution.Version            (Version, VersionRange)
 import qualified Distribution.Version            as C
 
 data SnapshotType = STNightly
+                  | STNightly2 !Day
                   | STLTS !Int !Int -- ^ major, minor
     deriving (Show, Read, Eq, Ord)
 
 instance ToJSON SnapshotType where
     toJSON STNightly = object
         [ "type" .= asText "nightly"
+        ]
+    toJSON (STNightly2 day) = object
+        [ "type" .= asText "nightly"
+        , "date" .= show day
         ]
     toJSON (STLTS major minor) = object
         [ "type" .= asText "lts"
