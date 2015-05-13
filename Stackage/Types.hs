@@ -29,7 +29,7 @@ module Stackage.Types
     , intersectVersionRanges
     ) where
 
-import           Control.Applicative             ((<$>), (<*>))
+import           Control.Applicative             ((<$>), (<*>), (<|>))
 import           Control.Arrow                   ((&&&))
 import           Control.Exception               (Exception)
 import           Control.Monad.Catch             (MonadThrow, throwM)
@@ -58,6 +58,7 @@ import           Distribution.System             (Arch, OS)
 import qualified Distribution.Text               as DT
 import           Distribution.Version            (Version, VersionRange)
 import qualified Distribution.Version            as C
+import Safe (readMay)
 
 data SnapshotType = STNightly
                   | STNightly2 !Day
@@ -81,11 +82,16 @@ instance FromJSON SnapshotType where
     parseJSON = withObject "SnapshotType" $ \o -> do
         t <- o .: "type"
         case asText t of
-            "nightly" -> return STNightly
+            "nightly" -> (STNightly2 <$> (o .: "date" >>= readFail)) <|> return STNightly
             "lts" -> STLTS
                 <$> o .: "major"
                 <*> o .: "minor"
             _ -> fail $ "Unknown type for SnapshotType: " ++ unpack t
+      where
+        readFail t =
+            case readMay t of
+                Nothing -> fail "read failed"
+                Just x -> return x
 
 -- | Package name is key
 type DocMap = Map Text PackageDocs
