@@ -214,6 +214,10 @@ data PackageConstraints = PackageConstraints
     , pcBuildBenchmarks  :: Bool
     , pcFlagOverrides    :: Map FlagName Bool
     , pcEnableLibProfile :: Bool
+    , pcSkipBuild        :: Bool
+    -- ^ Don't even bother building this library, useful when dealing with
+    -- OS-specific packages. See:
+    -- https://github.com/fpco/stackage-curator/issues/3
     }
     deriving (Show, Eq)
 instance ToJSON PackageConstraints where
@@ -224,6 +228,7 @@ instance ToJSON PackageConstraints where
         , "build-benchmarks" .= pcBuildBenchmarks
         , "flags" .= Map.mapKeysWith const unFlagName pcFlagOverrides
         , "library-profiling" .= pcEnableLibProfile
+        , "skip-build" .= pcSkipBuild
         ]
       where
         addMaintainer = maybe id (\m -> (("maintainer" .= m):)) pcMaintainer
@@ -237,6 +242,7 @@ instance FromJSON PackageConstraints where
         pcFlagOverrides <- Map.mapKeysWith const mkFlagName <$> o .: "flags"
         pcMaintainer <- o .:? "maintainer"
         pcEnableLibProfile <- fmap (fromMaybe True) (o .:? "library-profiling")
+        pcSkipBuild <- o .:? "skip-build" .!= False
         return PackageConstraints {..}
 
 data TestState = ExpectSuccess
