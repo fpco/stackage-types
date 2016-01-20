@@ -119,6 +119,7 @@ data BuildPlan = BuildPlan
     , bpTools       :: Vector (PackageName, Version)
     , bpPackages    :: Map PackageName PackagePlan
     , bpGithubUsers :: Map Text (Set Text)
+    , bpBuildToolOverrides :: Map Text (Set Text)
     }
     deriving (Show, Eq)
 
@@ -128,6 +129,7 @@ instance ToJSON BuildPlan where
         , "tools" .= fmap goTool bpTools
         , "packages" .= Map.mapKeysWith const unPackageName bpPackages
         , "github-users" .= bpGithubUsers
+        , "build-tool-overrides" .= bpBuildToolOverrides
         ]
       where
         goTool (k, v) = object
@@ -140,6 +142,7 @@ instance FromJSON BuildPlan where
         bpTools <- (o .: "tools") >>= T.mapM goTool
         bpPackages <- Map.mapKeysWith const mkPackageName <$> (o .: "packages")
         bpGithubUsers <- o .:? "github-users" .!= mempty
+        bpBuildToolOverrides <- o .:? "build-tool-overrides" .!= mempty
         return BuildPlan {..}
       where
         goTool = withObject "Tool" $ \o -> (,)
